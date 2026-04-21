@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BDBWin 5.0 — The Business Runtime</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#08090E;
+  --sur:#11131A;
+  --sur2:#191C26;
+  --sur3:#1E2230;
+  --gold:#F5BC45;
+  --gold-dim:rgba(245,188,69,.12);
+  --blue:#5B9CF6;
+  --blue-dim:rgba(91,156,246,.1);
+  --green:#00D48A;
+  --green-dim:rgba(0,212,138,.1);
+  --orange:#FF5E38;
+  --orange-dim:rgba(255,94,56,.1);
+  --red:#FF3B47;
+  --white:#F2F4FA;
+  --muted:#9BAABE;
+  --faint:#4A566E;
+  --border:rgba(255,255,255,.07);
+  --border2:rgba(255,255,255,.13);
+  --grid-color:rgba(255,255,255,.07);
+  --text-primary:#F2F4FA;
+  --text-secondary:#9BAABE;
+  --text-faint:#4A566E;
+  --pain-title:#F2F4FA;
+  --pain-desc:#9BAABE;
+  --nav-bg:rgba(8,9,14,.85);
+  --preview-bar:#191C26;
+  --kpi-bg:#191C26;
+}
+
+/* LIGHT THEME */
+body.light{
+  --bg:#F4F5F8;
+  --sur:#FFFFFF;
+  --sur2:#F0F2F7;
+  --sur3:#E8EBF2;
+  --white:#0B1628;
+  --muted:#4A566E;
+  --faint:#9BAABE;
+  --border:rgba(0,0,0,.08);
+  --border2:rgba(0,0,0,.14);
+  --grid-color:rgba(0,0,0,.06);
+  --text-primary:#0B1628;
+  --text-secondary:#4A566E;
+  --text-faint:#9BAABE;
+  --pain-title:#0B1628;
+  --pain-desc:#4A566E;
+  --nav-bg:rgba(244,245,248,.9);
+  --preview-bar:#E8EBF2;
+  --kpi-bg:#F0F2F7;
+  --gold-dim:rgba(245,188,69,.15);
+  --blue-dim:rgba(91,156,246,.12);
+  --green-dim:rgba(0,212,138,.12);
+  --orange-dim:rgba(255,94,56,.1);
+}
+
+/* TOGGLE */
+.theme-toggle{
+  display:flex;align-items:center;gap:8px;
+  background:var(--sur2);
+  border:1px solid var(--border2);
+  border-radius:999px;
+  padding:6px 14px;
+  cursor:pointer;
+  transition:all .2s;
+  font-size:13px;
+  color:var(--muted);
+  font-family:'DM Sans',sans-serif;
+  flex-shrink:0;
+}
+.theme-toggle:hover{border-color:var(--gold);color:var(--white)}
+.toggle-icon{font-size:14px;transition:transform .3s}
+body.light .toggle-sun{display:none}
+body:not(.light) .toggle-moon{display:none}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--white);overflow-x:hidden;transition:background .3s,color .3s}
+
+/* ── GRID TEXTURE ── */
+.grid-bg{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(var(--grid-color) 1px,transparent 1px),linear-gradient(90deg,var(--grid-color) 1px,transparent 1px);
+  background-size:60px 60px;opacity:.4;
+}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px 60px;
+  background:var(--nav-bg);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  transition:background .3s,border-color .3s;
+}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{font-size:14px;color:var(--muted);text-decoration:none;letter-spacing:.5px;transition:color .2s}
+.nav-links a:hover{color:var(--white)}
+.nav-cta{padding:10px 24px;background:var(--gold);color:var(--bg);border:none;border-radius:999px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none}
+.nav-cta:hover{background:#FFD060;transform:translateY(-1px)}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:100px 60px 80px;
+  position:relative;overflow:hidden;
+  background:var(--bg);
+}
+.hero-glow{position:absolute;width:900px;height:900px;border-radius:50%;background:radial-gradient(circle,rgba(245,188,69,.07) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-55%);pointer-events:none}
+.hero-glow2{position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(91,156,246,.05) 0%,transparent 65%);bottom:-100px;right:0;pointer-events:none}
+
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border:1px solid rgba(245,188,69,.35);border-radius:999px;background:rgba(245,188,69,.07);font-family:'Space Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:36px;animation:fadeUp .6s ease both}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+.hero-headline{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(72px,8vw,130px);line-height:.88;text-transform:uppercase;letter-spacing:-2px;color:var(--white);margin-bottom:28px;animation:fadeUp .6s .1s ease both}
+.hero-headline span{color:var(--gold)}
+
+.hero-sub{font-size:clamp(16px,1.8vw,21px);font-weight:300;color:var(--muted);line-height:1.75;max-width:660px;margin:0 auto 52px;animation:fadeUp .6s .2s ease both}
+.hero-sub strong{color:var(--white);font-weight:500}
+
+.hero-actions{display:flex;align-items:center;gap:14px;margin-bottom:80px;animation:fadeUp .6s .3s ease both}
+
+.btn-primary{padding:16px 36px;background:var(--gold);color:var(--bg);border:none;border-radius:999px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;cursor:pointer;transition:all .25s;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{background:#FFD060;transform:translateY(-2px);box-shadow:0 12px 40px rgba(245,188,69,.25)}
+
+.btn-ghost{padding:16px 36px;background:transparent;color:var(--muted);border:1px solid var(--border2);border-radius:999px;font-family:'DM Sans',sans-serif;font-size:16px;cursor:pointer;transition:all .25s;text-decoration:none}
+.btn-ghost:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
+
+/* DASHBOARD PREVIEW */
+.hero-preview{width:100%;max-width:1060px;background:var(--sur);border:1px solid var(--border2);border-radius:20px;overflow:hidden;animation:fadeUp .6s .4s ease both;box-shadow:0 40px 100px rgba(0,0,0,.5)}
+body.light .hero-preview{box-shadow:0 28px 70px rgba(0,0,0,.1)}
+.preview-bar{height:42px;background:var(--preview-bar);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:8px}
+.preview-dot{width:10px;height:10px;border-radius:50%}
+.preview-body{padding:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{background:var(--kpi-bg);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;transition:background .3s}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.k-blue::before{background:var(--blue)}
+.kpi.k-green::before{background:var(--green)}
+.kpi.k-gold::before{background:var(--gold)}
+.kpi.k-red::before{background:var(--red)}
+.kpi-label{font-size:10px;color:var(--faint);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+.kpi-val{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:30px;color:var(--white);line-height:1}
+.kpi-chg{font-size:11px;margin-top:4px}
+.up{color:var(--green)}.warn{color:var(--gold)}.alert{color:var(--red)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── PROBLEM ── */
+.section{padding:120px 60px;position:relative}
+.section.s-sur{background:var(--sur)}
+.section.s-sur2{background:var(--sur2)}
+.section.s-bg{background:var(--bg)}
+
+.section-inner{max-width:1200px;margin:0 auto}
+
+.s-label{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--faint);margin-bottom:16px}
+.s-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(48px,6vw,88px);line-height:.92;text-transform:uppercase;letter-spacing:-1px;color:var(--white);margin-bottom:20px}
+.s-title span{color:var(--gold)}
+.s-title span.bl{color:var(--blue)}
+.s-title span.gr{color:var(--green)}
+.s-title span.or{color:var(--orange)}
+.s-sub{font-size:17px;font-weight:300;color:var(--muted);line-height:1.7;max-width:600px;margin-bottom:56px}
+
+/* PAIN CARDS */
+.pain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.pain-card{padding:32px;border:1px solid var(--border);border-radius:16px;background:var(--sur2);transition:all .3s}
+.pain-card:hover{border-color:var(--border2);transform:translateY(-4px)}
+.pain-num{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:60px;color:var(--orange);line-height:1;margin-bottom:10px}
+.pain-title{font-size:15px;font-weight:500;color:var(--white);margin-bottom:8px}
+.pain-desc{font-size:13px;color:var(--muted);line-height:1.6}
+/* SOLUTION */
+.solution-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+
+.feature-list{display:flex;flex-direction:column;gap:22px;margin-top:8px}
+.feature-item{display:flex;align-items:flex-start;gap:16px}
+.f-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.f-icon.blue{background:var(--blue-dim)}
+.f-icon.green{background:var(--green-dim)}
+.f-icon.gold{background:var(--gold-dim)}
+.f-text h4{font-size:15px;font-weight:500;color:var(--white);margin-bottom:4px}
+.f-text p{font-size:13px;color:var(--muted);line-height:1.55}
+
+.sol-cards{display:flex;flex-direction:column;gap:12px}
+.sol-card{display:flex;align-items:center;gap:16px;padding:18px 22px;border:1px solid var(--border);border-radius:14px;background:var(--sur2);transition:all .3s}
+.sol-card:hover{border-color:var(--border2)}
+.s-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sc-text h4{font-size:13px;font-weight:500;color:var(--white);margin-bottom:2px}
+.sc-text p{font-size:12px;color:var(--muted)}
+.sc-badge{margin-left:auto;font-size:11px;font-weight:500;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.b-green{background:var(--green-dim);color:var(--green)}
+.b-gold{background:var(--gold-dim);color:var(--gold)}
+.b-blue{background:var(--blue-dim);color:var(--blue)}
+.b-red{background:rgba(255,59,71,.1);color:var(--red)}
+
+/* PHASES */
+.phases-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.phase-card{padding:28px 22px;border:1px solid var(--border);border-radius:16px;background:var(--sur2);position:relative;overflow:hidden;transition:all .3s}
+.phase-card:hover{border-color:var(--border2);transform:translateY(-4px)}
+.phase-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.pc1::before{background:var(--gold)}.pc2::before{background:var(--blue)}.pc3::before{background:var(--green)}.pc4::before{background:var(--orange)}
+.ph-bg-num{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:90px;line-height:1;opacity:.06;position:absolute;top:8px;right:12px}
+.pc1 .ph-bg-num{color:var(--gold)}.pc2 .ph-bg-num{color:var(--blue)}.pc3 .ph-bg-num{color:var(--green)}.pc4 .ph-bg-num{color:var(--orange)}
+.ph-tag{display:inline-flex;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:500;padding:4px 10px;border-radius:999px;margin-bottom:14px}
+.pc1 .ph-tag{background:var(--gold-dim);color:var(--gold)}
+.pc2 .ph-tag{background:var(--blue-dim);color:var(--blue)}
+.pc3 .ph-tag{background:var(--green-dim);color:var(--green)}
+.pc4 .ph-tag{background:var(--orange-dim);color:var(--orange)}
+.ph-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.5px;color:var(--white);margin-bottom:10px}
+.ph-desc{font-size:13px;color:var(--muted);line-height:1.6}
+
+/* EARLY ACCESS */
+.cta-section{padding:140px 60px;text-align:center;position:relative;overflow:hidden;background:var(--sur)}
+.cta-glow{position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(245,188,69,.07) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.cta-inner{position:relative;z-index:2;max-width:680px;margin:0 auto}
+.cta-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(56px,7vw,104px);line-height:.9;text-transform:uppercase;letter-spacing:-2px;color:var(--white);margin-bottom:20px}
+.cta-title span{color:var(--gold)}
+.cta-sub{font-size:18px;color:var(--muted);line-height:1.7;margin-bottom:48px;font-weight:300}
+.cta-sub strong{color:var(--white);font-weight:500}
+.cta-form{display:flex;gap:12px;max-width:480px;margin:0 auto 16px}
+.cta-input{flex:1;padding:16px 20px;border:1px solid var(--border2);border-radius:999px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--white);background:var(--sur2);outline:none;transition:border-color .2s}
+.cta-input:focus{border-color:rgba(245,188,69,.5)}
+.cta-input::placeholder{color:var(--faint)}
+.cta-note{font-size:13px;color:var(--faint)}
+
+/* FOOTER */
+footer{background:var(--bg);padding:44px 60px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)}
+.footer-copy{font-size:13px;color:var(--faint)}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-size:13px;color:var(--faint);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--muted)}
+
+/* DIVIDER */
+.section-divider{height:1px;background:var(--border);max-width:1200px;margin:0 auto}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .65s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:900px){
+  nav{padding:18px 24px}
+  .nav-links{display:none}
+  .hero{padding:80px 24px 60px}
+  .preview-body{grid-template-columns:repeat(2,1fr)}
+  .pain-grid,.phases-grid{grid-template-columns:1fr}
+  .solution-grid{grid-template-columns:1fr;gap:48px}
+  .section{padding:80px 24px}
+  .cta-section{padding:100px 24px}
+  .cta-form{flex-direction:column}
+  footer{flex-direction:column;gap:16px;text-align:center;padding:32px 24px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <svg width="140" height="32" viewBox="0 0 260 64" xmlns="http://www.w3.org/2000/svg">
+    <rect width="260" height="64" rx="10" fill="#0B1628"/>
+    <circle cx="16" cy="16" r="2.8" fill="#E8EFF8" opacity="0.55"/>
+    <circle cx="32" cy="16" r="2.8" fill="#E8EFF8" opacity="0.55"/>
+    <circle cx="48" cy="16" r="2.8" fill="#E8EFF8" opacity="0.55"/>
+    <circle cx="16" cy="32" r="2.8" fill="#E8EFF8" opacity="0.55"/>
+    <circle cx="32" cy="32" r="5.5" fill="#F57C00"/>
+    <circle cx="48" cy="32" r="2.8" fill="#E8EFF8" opacity="0.55"/>
+    <circle cx="16" cy="48" r="2.8" fill="#E8EFF8" opacity="0.55"/>
+    <circle cx="32" cy="48" r="2.8" fill="#E8EFF8" opacity="0.55"/>
+    <circle cx="48" cy="48" r="2.8" fill="#E8EFF8" opacity="0.55"/>
+    <text x="68" y="30" font-family="'Segoe UI',Arial,sans-serif" font-size="24" font-weight="800" dominant-baseline="central" fill="#E8EFF8">BDBWin <tspan fill="#F57C00">5.0</tspan></text>
+  </svg>
+  <div class="nav-links">
+    <a href="#problem" data-en="The problem" data-de="Das Problem">The problem</a>
+    <a href="#solution" data-en="What's new" data-de="Was neu ist">What's new</a>
+    <a href="#phases" data-en="Roadmap" data-de="Fahrplan">Roadmap</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <button class="theme-toggle" onclick="toggleLang()" aria-label="Toggle language">
+      <span id="lang-icon">🇩🇪</span>
+      <span id="lang-label">Deutsch</span>
+    </button>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span class="toggle-moon">🌙</span>
+      <span class="toggle-sun">☀️</span>
+      <span id="toggle-label">Light mode</span>
+    </button>
+    <a href="#access" class="nav-cta" data-en="Get Early Access" data-de="Frühzugang sichern">Get Early Access</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+
+  <div class="hero-badge">
+    <div class="badge-dot"></div>
+    <span data-en="BDBWin 5.0 — Now in development" data-de="BDBWin 5.0 — Jetzt in Entwicklung">BDBWin 5.0 — Now in development</span>
+  </div>
+
+  <h1 class="hero-headline">
+    <span data-en="Your business." data-de="Ihr Unternehmen.">Your business.</span><br>
+    <span class="gold-text" data-en="Speaking to you." data-de="Spricht zu Ihnen."><span style="color:var(--gold)">Speaking to you.</span></span>
+  </h1>
+
+  <p class="hero-sub">
+    <span data-en="BDBWin 5.0 is a complete rebuild — built for the person actually running the business." data-de="BDBWin 5.0 ist ein kompletter Neubau — entwickelt für die Person, die das Unternehmen wirklich führt.">BDBWin 5.0 is a complete rebuild — built for the person actually running the business.</span>
+    <strong data-en="Full ERP. Live intelligence. Plain language. Every morning." data-de="Vollständiges ERP. Live-Intelligenz. Klare Sprache. Jeden Morgen.">Full ERP. Live intelligence. Plain language. Every morning.</strong>
+  </p>
+
+  <div class="hero-actions">
+    <a href="#access" class="btn-primary" data-en="Get Early Access" data-de="Frühzugang sichern">
+      Get Early Access
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+    <a href="#solution" class="btn-ghost" data-en="See what's coming" data-de="Was kommt als Nächstes">See what's coming</a>
+  </div>
+
+  <div class="hero-preview">
+    <div class="preview-bar">
+      <div class="preview-dot" style="background:#ff5f57"></div>
+      <div class="preview-dot" style="background:#febc2e"></div>
+      <div class="preview-dot" style="background:#28c840"></div>
+      <span style="font-family:'Space Mono',monospace;font-size:11px;color:#4A566E;margin-left:12px">BDBWin 5.0 — Dashboard</span>
+    </div>
+    <div class="preview-body">
+      <div class="kpi k-blue">
+        <div class="kpi-label">Open Orders</div>
+        <div class="kpi-val">414</div>
+        <div class="kpi-chg up">▲ +12 today</div>
+      </div>
+      <div class="kpi k-green">
+        <div class="kpi-label">Daily Revenue</div>
+        <div class="kpi-val">€28.4k</div>
+        <div class="kpi-chg up">▲ +6.3% vs yesterday</div>
+      </div>
+      <div class="kpi k-gold">
+        <div class="kpi-label">Open Purchase Orders</div>
+        <div class="kpi-val">325</div>
+        <div class="kpi-chg warn">→ No change</div>
+      </div>
+      <div class="kpi k-red">
+        <div class="kpi-label">XmlMailer Pending</div>
+        <div class="kpi-val">280</div>
+        <div class="kpi-chg alert">⚠ Check immediately</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="section s-sur" id="problem">
+  <div class="grid-bg" style="opacity:.2"></div>
+  <div class="section-inner">
+    <p class="s-label reveal" data-en="The reality today" data-de="Die heutige Realität">The reality today</p>
+    <h2 class="s-title reveal"><span data-en="The software" data-de="Die Software">The software</span><br><span class="or" data-en="wasn't built for you." data-de="wurde nicht für Sie gebaut.">wasn't built for you.</span></h2>
+    <p class="s-sub reveal" data-en="Every ERP on the market was designed for IT departments — not for the person actually running the business. That gap costs you every single morning." data-de="Jedes ERP auf dem Markt wurde für IT-Abteilungen entwickelt — nicht für die Person, die das Unternehmen wirklich führt. Diese Lücke kostet Sie jeden Morgen.">Every ERP on the market was designed for IT departments — not for the person actually running the business. That gap costs you every single morning.</p>
+    <div class="pain-grid">
+      <div class="pain-card reveal">
+        <div class="pain-num">45 min</div>
+        <div class="pain-title" data-en="Every morning — just to understand yesterday" data-de="Jeden Morgen — nur um gestern zu verstehen">Every morning — just to understand yesterday</div>
+        <div class="pain-desc" data-en="Three windows. ERP data nobody can read. An Excel file from last Monday. An inbox full of manual updates from your own team. Before the first coffee." data-de="Drei Fenster. ERP-Daten, die niemand lesen kann. Eine Excel-Datei vom letzten Montag. Ein Posteingang voller manueller Updates vom eigenen Team. Vor dem ersten Kaffee.">Three windows. ERP data nobody can read. An Excel file from last Monday. An inbox full of manual updates from your own team. Before the first coffee.</div>
+      </div>
+      <div class="pain-card reveal">
+        <div class="pain-num">50%</div>
+        <div class="pain-title" data-en="Of ERP implementations fail on the first attempt" data-de="Aller ERP-Einführungen scheitern beim ersten Versuch">Of ERP implementations fail on the first attempt</div>
+        <div class="pain-desc" data-en="The software is so complex that the implementation becomes the problem. Half a million euros. Two years. A coin flip on whether it works." data-de="Die Software ist so komplex, dass die Implementierung selbst zum Problem wird. Eine halbe Million Euro. Zwei Jahre. Ein Münzwurf, ob es funktioniert.">The software is so complex that the implementation becomes the problem. Half a million euros. Two years. A coin flip on whether it works.</div>
+      </div>
+      <div class="pain-card reveal">
+        <div class="pain-num">0</div>
+        <div class="pain-title" data-en="ERPs that speak plain business language" data-de="ERPs, die klare Geschäftssprache sprechen">ERPs that speak plain business language</div>
+        <div class="pain-desc" data-en="SAP records data. Oracle records data. Every system on the market tells you what happened — not one tells you what it means or what to do today." data-de="SAP erfasst Daten. Oracle erfasst Daten. Jedes System auf dem Markt sagt Ihnen, was passiert ist — keines sagt Ihnen, was es bedeutet oder was Sie heute tun sollen.">SAP records data. Oracle records data. Every system on the market tells you what happened — not one tells you what it means or what to do today.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<section class="section s-bg" id="solution">
+  <div class="section-inner">
+    <div class="solution-grid">
+      <div>
+        <p class="s-label reveal" data-en="BDBWin 5.0" data-de="BDBWin 5.0">BDBWin 5.0</p>
+        <h2 class="s-title reveal"><span data-en="Everything." data-de="Alles.">Everything.</span><br><span data-en="Finally connected." data-de="Endlich verbunden.">Finally connected.</span></h2>
+        <p class="s-sub reveal" data-en="Not a new interface on old logic. A complete rebuild — three layers, one product, one screen that tells you everything in 60 seconds." data-de="Keine neue Oberfläche auf alter Logik. Ein kompletter Neubau — drei Ebenen, ein Produkt, ein Bildschirm, der Ihnen alles in 60 Sekunden sagt.">Not a new interface on old logic. A complete rebuild — three layers, one product, one screen that tells you everything in 60 seconds.</p>
+        <div class="feature-list">
+          <div class="feature-item reveal">
+            <div class="f-icon blue">⚙️</div>
+            <div class="f-text">
+              <h4 data-en="Full ERP Core" data-de="Vollständiger ERP-Kern">Full ERP Core</h4>
+              <p data-en="Orders, finance, warehouse, procurement, POS — every module rebuilt clean. GoBD compliant. Legally solid." data-de="Aufträge, Finanzen, Lager, Einkauf, Kasse — jedes Modul neu aufgebaut. GoBD-konform. Rechtssicher.">Orders, finance, warehouse, procurement, POS — every module rebuilt clean. GoBD compliant. Legally solid.</p>
+            </div>
+          </div>
+          <div class="feature-item reveal">
+            <div class="f-icon green">📈</div>
+            <div class="f-text">
+              <h4 data-en="Live Intelligence Layer" data-de="Live-Intelligenzschicht">Live Intelligence Layer</h4>
+              <p data-en="Patterns, trends, risk signals — built directly on live operational data. Not a BI tool bolted on. Built in." data-de="Muster, Trends, Risikosignale — direkt auf Live-Betriebsdaten aufgebaut. Kein nachträgliches BI-Tool. Eingebaut.">Patterns, trends, risk signals — built directly on live operational data. Not a BI tool bolted on. Built in.</p>
+            </div>
+          </div>
+          <div class="feature-item reveal">
+            <div class="f-icon gold">🎯</div>
+            <div class="f-text">
+              <h4 data-en="AI Decision Layer" data-de="KI-Entscheidungsschicht">AI Decision Layer</h4>
+              <p data-en="Plain German. One screen. 60 seconds. Your business speaks to you every morning — no Excel, no three windows." data-de="Klares Deutsch. Ein Bildschirm. 60 Sekunden. Ihr Unternehmen spricht jeden Morgen zu Ihnen — kein Excel, keine drei Fenster.">Plain German. One screen. 60 seconds. Your business speaks to you every morning — no Excel, no three windows.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="sol-cards">
+        <div class="sol-card reveal">
+          <div class="s-icon green-dim" style="background:var(--green-dim)">📦</div>
+          <div class="sc-text"><h4>Auftrag — Order Management</h4><p data-en="414 open · 12 new today" data-de="414 offen · 12 heute neu">414 open · 12 new today</p></div>
+          <div class="sc-badge b-green">Live</div>
+        </div>
+        <div class="sol-card reveal">
+          <div class="s-icon" style="background:var(--blue-dim)">💰</div>
+          <div class="sc-text"><h4>Fibu — Financial Accounting</h4><p data-en="GoBD compliant · Immutable audit trail" data-de="GoBD-konform · Unveränderliche Buchungsspur">GoBD compliant · Immutable audit trail</p></div>
+          <div class="sc-badge b-blue">GoBD</div>
+        </div>
+        <div class="sol-card reveal">
+          <div class="s-icon" style="background:var(--gold-dim)">🏭</div>
+          <div class="sc-text"><h4>Lager — Lagerhaus</h4><p data-en="Stock risk: Article 710 · 14 days" data-de="Lagerrisiko: Artikel 710 · 14 Tage">Stock risk: Article 710 · 14 days</p></div>
+          <div class="sc-badge b-gold">⚠ Alert</div>
+        </div>
+        <div class="sol-card reveal">
+          <div class="s-icon" style="background:rgba(255,59,71,.1)">📧</div>
+          <div class="sc-text"><h4>XmlMailer — E-Mail-Versand</h4><p data-en="280 pending · Needs attention" data-de="280 ausstehend · Sofort prüfen">280 pending · Needs attention</p></div>
+          <div class="sc-badge b-red" data-en="Action needed" data-de="Handlungsbedarf">Action needed</div>
+        </div>
+        <div class="sol-card reveal">
+          <div class="s-icon" style="background:var(--blue-dim)">🧠</div>
+          <div class="sc-text"><h4 data-en="Intelligence + AI Layer" data-de="Intelligenz- und KI-Ebene">Intelligence + AI Layer</h4><p data-en="Revenue +8% · One decision today" data-de="Umsatz +8% · Eine Entscheidung heute">Revenue +8% · One decision today</p></div>
+          <div class="sc-badge b-blue" data-en="In development" data-de="In Entwicklung">In development</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PHASES -->
+<section class="section s-sur" id="phases">
+  <div class="grid-bg" style="opacity:.2"></div>
+  <div class="section-inner">
+    <p class="s-label reveal tc" style="text-align:center" data-en="The build journey" data-de="Der Entwicklungsweg">The build journey</p>
+    <h2 class="s-title reveal" style="text-align:center;margin-bottom:56px"><span data-en="Four phases." data-de="Vier Phasen.">Four phases.</span> <span data-en="One direction." data-de="Eine Richtung.">One direction.</span></h2>
+    <div class="phases-grid">
+      <div class="phase-card pc1 reveal">
+        <div class="ph-bg-num">1</div>
+        <div class="ph-tag" data-en="Building now" data-de="Jetzt im Bau">Building now</div>
+        <div class="ph-title" data-en="ERP Foundation" data-de="ERP-Fundament">ERP Foundation</div>
+        <div class="ph-desc" data-en="Complete rebuild of every module. Orders, finance, warehouse, procurement. GoBD baked in from day one." data-de="Vollständiger Neubau jedes Moduls. Aufträge, Finanzen, Lager, Einkauf. GoBD von Anfang an integriert.">Complete rebuild of every module. Orders, finance, warehouse, procurement. GoBD baked in from day one.</div>
+      </div>
+      <div class="phase-card pc2 reveal">
+        <div class="ph-bg-num">2</div>
+        <div class="ph-tag" data-en="Coming next" data-de="Kommt als Nächstes">Coming next</div>
+        <div class="ph-title" data-en="All Modules Live" data-de="Alle Module live">All Modules Live</div>
+        <div class="ph-desc" data-en="Every service deployed one by one. Auftrag, Fibu, Lager, Bestellung, Kasse, Document, XmlMailer." data-de="Jeder Dienst wird einzeln bereitgestellt. Auftrag, Fibu, Lager, Bestellung, Kasse, Dokument, XmlMailer.">Every service deployed one by one. Auftrag, Fibu, Lager, Bestellung, Kasse, Document, XmlMailer.</div>
+      </div>
+      <div class="phase-card pc3 reveal">
+        <div class="ph-bg-num">3</div>
+        <div class="ph-tag" data-en="Intelligence" data-de="Intelligenz">Intelligence</div>
+        <div class="ph-title" data-en="The Brain" data-de="Das Gehirn">The Brain</div>
+        <div class="ph-desc" data-en="Live KPIs. Trend detection. Risk signals. Analytics on real operational data — not last week's export." data-de="Live-KPIs. Trenderkennung. Risikosignale. Analysen auf echten Betriebsdaten — nicht der Export der letzten Woche.">Live KPIs. Trend detection. Risk signals. Analytics on real operational data — not last week's export.</div>
+      </div>
+      <div class="phase-card pc4 reveal">
+        <div class="ph-bg-num">4</div>
+        <div class="ph-tag" data-en="The voice" data-de="Die Stimme">The voice</div>
+        <div class="ph-title" data-en="AI Decision Layer" data-de="KI-Entscheidungsschicht">AI Decision Layer</div>
+        <div class="ph-desc" data-en="Plain German. 60 seconds. Every morning. Your business tells you what to do today. No translation needed." data-de="Klares Deutsch. 60 Sekunden. Jeden Morgen. Ihr Unternehmen sagt Ihnen, was heute zu tun ist. Keine Übersetzung nötig.">Plain German. 60 seconds. Every morning. Your business tells you what to do today. No translation needed.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EARLY ACCESS -->
+<section class="cta-section" id="access">
+  <div class="cta-glow"></div>
+  <div class="grid-bg" style="opacity:.15"></div>
+  <div class="cta-inner">
+    <p class="s-label reveal" style="text-align:center" data-en="For existing clients" data-de="Für Bestandskunden">For existing clients</p>
+    <h2 class="cta-title reveal"><span data-en="You were" data-de="Sie waren">You were</span><br><span data-en="here first." data-de="die Ersten.">here first.</span></h2>
+    <p class="cta-sub reveal" data-en="You have been with us from the beginning. Be the first to experience what comes next. Early access clients shape the product and get priority onboarding when BDBWin 5.0 launches." data-de="Sie sind von Anfang an dabei. Erleben Sie als Erste, was als Nächstes kommt. Frühzugangs-Kunden gestalten das Produkt und erhalten vorrangiges Onboarding beim Launch von BDBWin 5.0.">You have been with us from the beginning. <strong>Be the first to experience what comes next.</strong> Early access clients shape the product and get priority onboarding when BDBWin 5.0 launches.</p>
+    <div class="cta-form reveal">
+      <input type="email" class="cta-input" id="email-input" placeholder="Your email address" data-en-placeholder="Your email address" data-de-placeholder="Ihre E-Mail-Adresse">
+      <a href="#" class="btn-primary" style="white-space:nowrap" data-en="Get Early Access" data-de="Frühzugang sichern">Get Early Access</a>
+    </div>
+    <p class="cta-note reveal" data-en="No commitment. No cost. Just first in line." data-de="Keine Verpflichtung. Keine Kosten. Einfach als Erster.">No commitment. No cost. Just first in line.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <svg width="120" height="28" viewBox="0 0 260 64" xmlns="http://www.w3.org/2000/svg">
+    <rect width="260" height="64" rx="10" fill="#0B1628"/>
+    <circle cx="16" cy="16" r="2.8" fill="#E8EFF8" opacity="0.45"/>
+    <circle cx="32" cy="16" r="2.8" fill="#E8EFF8" opacity="0.45"/>
+    <circle cx="48" cy="16" r="2.8" fill="#E8EFF8" opacity="0.45"/>
+    <circle cx="16" cy="32" r="2.8" fill="#E8EFF8" opacity="0.45"/>
+    <circle cx="32" cy="32" r="5.5" fill="#F57C00"/>
+    <circle cx="48" cy="32" r="2.8" fill="#E8EFF8" opacity="0.45"/>
+    <circle cx="16" cy="48" r="2.8" fill="#E8EFF8" opacity="0.45"/>
+    <circle cx="32" cy="48" r="2.8" fill="#E8EFF8" opacity="0.45"/>
+    <circle cx="48" cy="48" r="2.8" fill="#E8EFF8" opacity="0.45"/>
+    <text x="68" y="30" font-family="'Segoe UI',Arial,sans-serif" font-size="24" font-weight="800" dominant-baseline="central" fill="#E8EFF8">BDBWin <tspan fill="#F57C00">5.0</tspan></text>
+  </svg>
+  <p class="footer-copy" data-en="© 2026 Megacom GmbH · All rights reserved" data-de="© 2026 Megacom GmbH · Alle Rechte vorbehalten">© 2026 Megacom GmbH · All rights reserved</p>
+  <div class="footer-links">
+    <a href="#" data-en="Privacy" data-de="Datenschutz">Privacy</a>
+    <a href="#" data-en="Imprint" data-de="Impressum">Imprint</a>
+    <a href="#" data-en="Contact" data-de="Kontakt">Contact</a>
+  </div>
+</footer>
+
+<script>
+const observer = new IntersectionObserver(entries => {
+  entries.forEach((entry, i) => {
+    if(entry.isIntersecting){
+      setTimeout(() => entry.target.classList.add('visible'), i * 70);
+      observer.unobserve(entry.target);
+    }
+  });
+}, {threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+let currentLang = localStorage.getItem('bdbwin-lang') || 'en';
+
+function applyLang(lang) {
+  document.querySelectorAll('[data-en]').forEach(el => {
+    el.textContent = lang === 'de' ? el.getAttribute('data-de') : el.getAttribute('data-en');
+  });
+  const emailInput = document.getElementById('email-input');
+  if(emailInput) emailInput.placeholder = lang === 'de' ? emailInput.getAttribute('data-de-placeholder') : emailInput.getAttribute('data-en-placeholder');
+  document.getElementById('lang-icon').textContent = lang === 'de' ? '🇬🇧' : '🇩🇪';
+  document.getElementById('lang-label').textContent = lang === 'de' ? 'English' : 'Deutsch';
+  currentLang = lang;
+  localStorage.setItem('bdbwin-lang', lang);
+}
+
+function toggleLang() {
+  applyLang(currentLang === 'en' ? 'de' : 'en');
+}
+
+function toggleTheme(){
+  const body = document.body;
+  const label = document.getElementById('toggle-label');
+  body.classList.toggle('light');
+  if(body.classList.contains('light')){
+    label.textContent = currentLang === 'de' ? 'Dunkelmodus' : 'Dark mode';
+    localStorage.setItem('bdbwin-theme','light');
+  } else {
+    label.textContent = currentLang === 'de' ? 'Hellmodus' : 'Light mode';
+    localStorage.setItem('bdbwin-theme','dark');
+  }
+}
+
+if(localStorage.getItem('bdbwin-theme') === 'light'){
+  document.body.classList.add('light');
+  document.getElementById('toggle-label').textContent = 'Dark mode';
+}
+if(currentLang === 'de') applyLang('de');
+</script>
+</body>
+</html>
